@@ -2,6 +2,9 @@
 #-*- coding: utf-8 -*-
 """
 
+Contact foreman to see when was the last puppet run for a given client.
+
+If the client reported within valid period, check also that puppet reported a success
 
 
 Few doctests, run with :
@@ -15,6 +18,7 @@ __version__ = "1.0"
 __credits__ = """Thanks to Foreman making my life much easier - http://theforeman.org/"""
 
 from datetime import timedelta, datetime
+from calendar import timegm
 from optparse import OptionParser, OptionGroup
 import base64
 import urllib2
@@ -76,27 +80,45 @@ def seconds2human(my_time):
 
 
 def check_result(params, server):
-    """ From the server response and input parameter
-        check if the job status should trigger an alert
+    """ 
+    From the server response and input parameter
+    check if the puppet client report should trigger an alert
         
     http://theforeman.org/projects/foreman/wiki/API
     """
 
-    job_started = datetime.fromtimestamp(int(server['timestamp']) / 1000)
+
+    last_report_str = server['reported_at']
+    report_summary = server['summary']
+
+
+    try:
+        total_report_time = server['metrics']['time']['total']
+    # foreman seems to have issue with sum of time for some reports
+    except KeyError:
+        total_report_time = 'N/A'
+    # No dateutil.parser on centos5 stock (python-dateutil.noarch)
+    # we know output timezone is Zulu
+    last_report = datetime(*map(int, re.split('[^\d]', last_report_str)[:-1])) 
+    # see http://stackoverflow.com/a/127872 for details
+    
     now = params['now']
-    now_since_start = now - job_started
-    msg = '%s last successful run was %s ago - see %s' % (
-                    params['job'],
-                    now_since_start,
-                    build_url(server['url'], '/buildTimeTrend'))
+    now_since_last_report = now - last_report
 
-    if (now_since_start >= convert_to_timedelta(params['critical'])):
+    msg = 'Last report was %s ago - took %s seconds'% (
+                    now_since_last_report,
+                    total_report_time)
+
+    if (now_since_last_report >= timedelta(minutes=params['critical'])):
         status = 'CRITICAL'
-    elif (now_since_start >= convert_to_timedelta(params['warning'])):
-
+    elif (now_since_last_report >= timedelta(minutes=params['warning'])):
         status = 'WARNING'
     else:
-        status = 'OK'
+        if (report_summary != 'Success'):
+             msg = "Last puppet run was marked as %s" % report_summary
+             status = 'WARNING'
+        else:
+             status = 'OK'
 
     return(status, msg)
 
@@ -234,17 +256,18 @@ def main():
                         user_in['hostname'],
                         'reports/last')
 
-    # Get the current time, no need to get the microseconds
-    user_in['now'] = datetime.now().replace(microsecond=0)
+    # Get the current UTC time, no need to get the microseconds
+    # we use UTC time as foreman output utc time by default
+    user_in['now'] = datetime.utcnow().replace(microsecond=0)
 
     verboseprint("CLI Arguments : ", user_in)
 
     foreman_out = eval(get_data(user_in['url'],
                         user_in['username'],
                         user_in['password'],
-                        user_in['timeout']))
+                        user_in['timeout']))['report']
 
-    verboseprint("Reply from server :", foreman_out)
+    verboseprint("Reply from server : \n%s" % json.dumps(foreman_out, sort_keys=True, indent=2))
 
     status, message = check_result(user_in, foreman_out)
 
