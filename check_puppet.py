@@ -46,20 +46,22 @@ def get_data(url, username, password, timeout):
 
     try:
         setdefaulttimeout(timeout)
-        return urllib2.urlopen(request).read()
-    
+        raw_out = urllib2.urlopen(request).read()
+        out = json.loads(raw_out) 
+
     except HTTPError:
-        print 'CRITICAL: %s does the job ever ran successfully ?' % url
+        print 'CRITICAL - Check %s does that node ever reported to puppet ?' % url
         raise SystemExit, 2
     except URLError:
-        print 'CRITICAL: Error on %s Double check the server name' % url
+        print 'CRITICAL - Error on %s Double check the server name' % url
         raise SystemExit, 2
 
-
+    return out
 
 
 def seconds2human(my_time):
-    """ Convert given duration in seconds into human readable string
+    """ 
+    Convert given duration in seconds into human readable string
 
     >>> seconds2human(60)
     '0:01:00'
@@ -73,6 +75,7 @@ def seconds2human(my_time):
     >>> seconds2human(86401)
     '1 day, 0:00:01'
     """
+
     time_delta = timedelta(seconds=my_time)
     return str(time_delta)
 
@@ -105,7 +108,8 @@ def check_result(params, server):
     now = params['now']
     now_since_last_report = now - last_report
 
-    msg = 'Last report was %s ago - took %s seconds'% (
+    msg = 'Last report was marked as %s %s ago - took %s seconds'% (
+                    report_summary,
                     now_since_last_report,
                     total_report_time)
 
@@ -115,7 +119,6 @@ def check_result(params, server):
         status = 'WARNING'
     else:
         if (report_summary != 'Success'):
-             msg = "Last puppet run was marked as %s" % report_summary
              status = 'WARNING'
         else:
              status = 'OK'
@@ -219,7 +222,9 @@ for a puppet client was successful and not too long ago."""
 
 
 def main():
-    """Runs all the functions"""
+    """
+    Runs all the functions
+    """
 
     # Command Line Parameters
     user_in = controller()
@@ -262,14 +267,15 @@ def main():
 
     verboseprint("CLI Arguments : ", user_in)
 
-    foreman_out = eval(get_data(user_in['url'],
-                        user_in['username'],
-                        user_in['password'],
-                        user_in['timeout']))['report']
+    foreman_out = get_data(user_in['url'],
+                           user_in['username'],
+                           user_in['password'],
+                           user_in['timeout'])
 
+    
     verboseprint("Reply from server : \n%s" % json.dumps(foreman_out, sort_keys=True, indent=2))
 
-    status, message = check_result(user_in, foreman_out)
+    status, message = check_result(user_in, foreman_out['report'])
 
     print '%s - %s' % (status, message)
     # Exit statuses recognized by Nagios
