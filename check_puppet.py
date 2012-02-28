@@ -4,7 +4,9 @@
 
 Contact foreman to see when was the last puppet run for a given client.
 
-If the client reported within valid period, check also that puppet reported a success
+If the client reported within valid period,
+check also that puppet reported a success
+
 
 
 Few doctests, run with :
@@ -15,7 +17,7 @@ __author__ = 'Julien Rottenberg'
 __date__ = "February 2012"
 
 __version__ = "1.0"
-__credits__ = """Thanks to Foreman making my life much easier - http://theforeman.org/"""
+__credits__ = """Thanks to Foreman - http://theforeman.org/"""
 
 from datetime import timedelta, datetime
 from calendar import timegm
@@ -35,11 +37,10 @@ def get_data(url, username, password, timeout):
     Fetch data using the api
     """
 
-
     request = urllib2.Request(url)
     request.add_header('Content-Type', 'application/json')
     request.add_header('Accept', 'application/json')
-    
+
     if (username and password):
         b64string = base64.encodestring('%s:%s' % (username, password))
         request.add_header("Authorization", "Basic %s" % b64string)
@@ -47,20 +48,20 @@ def get_data(url, username, password, timeout):
     try:
         setdefaulttimeout(timeout)
         raw_out = urllib2.urlopen(request).read()
-        out = json.loads(raw_out) 
+        out = json.loads(raw_out)
 
     except HTTPError:
-        print 'CRITICAL - Check %s does that node ever reported to puppet ?' % url
+        print 'CRITICAL - Check %s does that node ever reported?' % url
         raise SystemExit, 2
     except URLError:
-        print 'CRITICAL - Error on %s Double check the server name' % url
+        print 'CRITICAL - Error on %s Double check foreman name' % url
         raise SystemExit, 2
 
     return out
 
 
 def seconds2human(my_time):
-    """ 
+    """
     Convert given duration in seconds into human readable string
 
     >>> seconds2human(60)
@@ -80,20 +81,16 @@ def seconds2human(my_time):
     return str(time_delta)
 
 
-
-
 def check_result(params, server):
-    """ 
+    """
     From the server response and input parameter
     check if the puppet client report should trigger an alert
-        
+
     http://theforeman.org/projects/foreman/wiki/API
     """
 
-
     last_report_str = server['reported_at']
     report_summary = server['summary']
-
 
     try:
         total_report_time = server['metrics']['time']['total']
@@ -102,13 +99,13 @@ def check_result(params, server):
         total_report_time = 'N/A'
     # No dateutil.parser on centos5 stock (python-dateutil.noarch)
     # we know output timezone is Zulu
-    last_report = datetime(*map(int, re.split('[^\d]', last_report_str)[:-1])) 
+    last_report = datetime(*map(int, re.split('[^\d]', last_report_str)[:-1]))
     # see http://stackoverflow.com/a/127872 for details
-    
+
     now = params['now']
     now_since_last_report = now - last_report
 
-    msg = 'Last report was marked as %s %s ago - took %s seconds'% (
+    msg = 'Last report was marked as %s %s ago - took %s seconds' % (
                     report_summary,
                     now_since_last_report,
                     total_report_time)
@@ -119,9 +116,9 @@ def check_result(params, server):
         status = 'WARNING'
     else:
         if (report_summary != 'Success'):
-             status = 'WARNING'
+            status = 'WARNING'
         else:
-             status = 'OK'
+            status = 'OK'
 
     return(status, msg)
 
@@ -134,9 +131,9 @@ def usage():
     usage_string = """
     usage: %prog [options] -H SERVER -F FOREMAN_HOST -w WARNING -c CRITICAL
 
-    Make sure the last report seen by report for the given host is not too old 
+    Make sure the last report seen by report for the given host is not too old
     or exiting with an error
-    
+
     Warning and Critical are defined in minutes
 
     Ex :
@@ -153,7 +150,7 @@ def controller():
     Parse user input, fail quick if not enough parameters
     """
 
-    description = """A Nagios plugin to check if the last report 
+    description = """A Nagios plugin to check if the last report
 for a puppet client was successful and not too long ago."""
 
     version = "%prog " + __version__
@@ -272,7 +269,6 @@ def main():
                            user_in['password'],
                            user_in['timeout'])
 
-    
     verboseprint("Reply from server : \n%s" % json.dumps(foreman_out, sort_keys=True, indent=2))
 
     status, message = check_result(user_in, foreman_out['report'])
