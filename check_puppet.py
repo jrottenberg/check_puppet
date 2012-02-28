@@ -20,14 +20,12 @@ __version__ = "1.0"
 __credits__ = """Thanks to Foreman - http://theforeman.org/"""
 
 from datetime import timedelta, datetime
-from calendar import timegm
 from optparse import OptionParser, OptionGroup
 import base64
 import urllib2
 import re
 import json
 from urllib2 import HTTPError, URLError
-from urllib import quote
 from socket import setdefaulttimeout
 
 
@@ -269,7 +267,9 @@ def main():
                            user_in['password'],
                            user_in['timeout'])
 
-    verboseprint("Reply from server : \n%s" % json.dumps(foreman_out, sort_keys=True, indent=2))
+    verboseprint("Reply from server : \n%s" % json.dumps(foreman_out,
+                                                         sort_keys=True,
+                                                         indent=2))
 
     status, message = check_result(user_in, foreman_out['report'])
 
