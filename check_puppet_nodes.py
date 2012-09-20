@@ -132,9 +132,9 @@ globally healthy : not too many in errors, not too many out of sync."""
     connection.add_option('-u', '--username', type='string',
                           help='Foreman username')
     connection.add_option('-p', '--password', type='string',
-                           help='Foreman password')
+                          help='Foreman password')
     connection.add_option('-t', '--timeout', type='int', default=10,
-                           help='Connection timeout in seconds')
+                          help='Connection timeout in seconds')
     connection.add_option('-P', '--port', type='int',
                           help='Foreman port',
                           default=80)
@@ -210,17 +210,17 @@ def main():
         user_in['prefix'] = '/%s/' % user_in['prefix']
 
     user_in['url'] = "%s://%s:%s%shosts/%s/" % (protocol,
-                        user_in['hostname'],
-                        user_in['port'],
-                        user_in['prefix'],
-                        user_in['mode'])
+                                                user_in['hostname'],
+                                                user_in['port'],
+                                                user_in['prefix'],
+                                                user_in['mode'])
 
     verboseprint("CLI Arguments : ", user_in)
 
     foreman_data = get_data(user_in['url'],
-                           user_in['username'],
-                           user_in['password'],
-                           user_in['timeout'])
+                            user_in['username'],
+                            user_in['password'],
+                            user_in['timeout'])
 
     verboseprint("Reply from server : \n%s" % json.dumps(foreman_data,
                                                          sort_keys=True,
