@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 """
 
-Contact foreman to check the global health 
+Contact foreman to check the global health
 of the puppet nodes.
 
 If not too many clients are out of sync or in error
@@ -23,7 +23,7 @@ import urllib2
 import json
 from urllib2 import HTTPError, URLError
 from socket import setdefaulttimeout
-
+from sys import exit
 
 def get_data(url, username, password, timeout):
     """
@@ -46,10 +46,11 @@ def get_data(url, username, password, timeout):
 
     except HTTPError:
         print 'CRITICAL - Check %s is it a valid mode ? Check credentials' % url
-        raise SystemExit, 2
+        exit(2)
     except URLError:
         print 'CRITICAL - Error on %s Double check foreman server name' % url
-        raise SystemExit, 2
+        exit(2)
+
     return out
 
 
@@ -70,7 +71,7 @@ def check_result(params, server):
     elif (target >= params['warning']):
         status = 'WARNING'
     else:
-        servers = '' 
+        servers = ''
         for item in server:
             servers = '%s %s' % (servers, (item['host']['name']))
         msg = '%s -%s' % (msg,  servers)
@@ -104,7 +105,7 @@ def controller():
     Parse user input, fail quick if not enough parameters
     """
 
-    description = """A Nagios plugin to check if the puppet nodes are 
+    description = """A Nagios plugin to check if the puppet nodes are
 globally healthy : not too many in errors, not too many out of sync."""
 
     version = "%prog " + __version__
@@ -156,19 +157,19 @@ globally healthy : not too many in errors, not too many out of sync."""
         print """Non recognized option %s
         Please use --help for usage""" % arguments
         print usage()
-        raise SystemExit, 2
+        exit(2)
 
     if options.hostname is None:
         print "Missing -H HOSTNAME"
         print "We need the hostname of the Foreman server"
         print usage()
-        raise SystemExit, 2
+        exit(2)
 
     if options.mode is None:
         print "\nMissing -m MODE"
         print "\nWhat mode are you executing this check in ?"
         print usage()
-        raise SystemExit, 2
+        exit(2)
 
     return vars(options)
 
@@ -228,13 +229,13 @@ def main():
     print '%s - %s' % (status, message)
     # Exit statuses recognized by Nagios
     if   status == 'OK':
-        raise SystemExit, 0
+        exit(0)
     elif status == 'WARNING':
-        raise SystemExit, 1
+        exit(1)
     elif status == 'CRITICAL':
-        raise SystemExit, 2
+        exit(2)
     else:
-        raise SystemExit, 3
+        exit(3)
 
 
 if __name__ == '__main__':
