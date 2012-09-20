@@ -25,6 +25,7 @@ from urllib2 import HTTPError, URLError
 from socket import setdefaulttimeout
 from sys import exit
 
+
 def get_data(url, username, password, timeout):
     """
     Initialize the connection to Foreman
@@ -45,7 +46,7 @@ def get_data(url, username, password, timeout):
         out = json.loads(raw_out)
 
     except HTTPError:
-        print 'CRITICAL - Check %s is it a valid mode ? Check credentials' % url
+        print 'CRITICAL - is %s valid mode ? Check credentials' % url
         exit(2)
     except URLError:
         print 'CRITICAL - Error on %s Double check foreman server name' % url
@@ -93,8 +94,8 @@ def usage():
 
     Ex :
 
-    check_puppet_nodes.py -H foreman.example.com -m out_of_sync_hosts -w 5 -c 10
-    will check if we don't have more than 5 nodes out of sync, 10 for a critical
+    check_puppet_nodes.py -H foreman.example.com -m out_of_sync -w 5 -c 10
+    will check if less than 5 nodes are out of sync, 10 for a critical
 
     """
     return usage_string
@@ -184,7 +185,8 @@ def main():
 
     if user_in['verbose']:
         def verboseprint(*args):
-            """ http://stackoverflow.com/a/5980173 print only when verbose ON"""
+            """ http://stackoverflow.com/a/5980173
+            print only when verbose ON"""
             # Print each argument separately so caller doesn't need to
             # stuff everything to be printed into a single string
             print
