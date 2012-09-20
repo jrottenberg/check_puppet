@@ -35,4 +35,4 @@ Will make sure server1.example has successfully ran puppet and reported back wit
 
 
 
-
+[![Build Status](https://secure.travis-ci.org/jrottenberg/check_puppet.png)](http://travis-ci.org/jrottenberg/check_puppet)
