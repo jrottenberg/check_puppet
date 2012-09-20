@@ -17,11 +17,9 @@ __date__ = "September 2012"
 __version__ = "1.1"
 __credits__ = """Thanks to Foreman - http://theforeman.org/"""
 
-from datetime import timedelta, datetime
 from optparse import OptionParser, OptionGroup
 import base64
 import urllib2
-import re
 import json
 from urllib2 import HTTPError, URLError
 from socket import setdefaulttimeout
@@ -47,10 +45,10 @@ def get_data(url, username, password, timeout):
         out = json.loads(raw_out)
 
     except HTTPError:
-        print 'CRITICAL - Check %s does that node ever reported?' % url
+        print 'CRITICAL - Check %s is it a valid mode ? Check credentials' % url
         raise SystemExit, 2
     except URLError:
-        print 'CRITICAL - Error on %s Double check foreman name' % url
+        print 'CRITICAL - Error on %s Double check foreman server name' % url
         raise SystemExit, 2
     return out
 
@@ -64,17 +62,21 @@ def check_result(params, server):
     """
 
     mode = params['mode']
-    target = server.get(mode)
+    target = len(server)
+    msg = '%s servers have the status : %s' % (target, mode)
 
-    msg = '%s servers are %s' % (target, mode)
-
-    if (target >= params['warning']):
-        status = 'WARNING'
-    elif (target >= params['critical']):
+    if (target >= params['critical']):
         status = 'CRITICAL'
+    elif (target >= params['warning']):
+        status = 'WARNING'
     else:
+        servers = '' 
+        for item in server:
+            servers = '%s %s' % (servers, (item['host']['name']))
+        msg = '%s -%s' % (msg,  servers)
         status = 'OK'
 
+    msg = '%s (levels at %s/%s)' % (msg, params['warning'], params['critical'])
     return(status, msg)
 
 
@@ -120,7 +122,7 @@ globally healthy : not too many in errors, not too many out of sync."""
                         help='Critical threshold in minutes')
 
     parser.add_option('-m', '--mode', type='choice',
-                        choices=['out_of_sync_hosts', 'bad_hosts', 'active_hosts'],
+                        choices=['out_of_sync', 'errors', 'active'],
                         help='Mode of check')
 
     connection = OptionGroup(parser, "Connection Options",
@@ -156,13 +158,13 @@ globally healthy : not too many in errors, not too many out of sync."""
         print usage()
         raise SystemExit, 2
 
-    if (options.hostname == None):
+    if options.hostname is None:
         print "Missing -H HOSTNAME"
         print "We need the hostname of the Foreman server"
         print usage()
         raise SystemExit, 2
 
-    if (options.mode == None):
+    if options.mode is None:
         print "\nMissing -m MODE"
         print "\nWhat mode are you executing this check in ?"
         print usage()
@@ -204,11 +206,11 @@ def main():
     if (user_in['prefix'] != '/'):
         user_in['prefix'] = '/%s/' % user_in['prefix']
 
-    user_in['url'] = "%s://%s:%s%s%s" % (protocol,
+    user_in['url'] = "%s://%s:%s%shosts/%s/" % (protocol,
                         user_in['hostname'],
                         user_in['port'],
                         user_in['prefix'],
-                        '/dashboard')
+                        user_in['mode'])
 
     verboseprint("CLI Arguments : ", user_in)
 
