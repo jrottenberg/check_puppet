@@ -23,7 +23,7 @@ import urllib2
 import json
 from urllib2 import HTTPError, URLError
 from socket import setdefaulttimeout
-from sys import exit
+import sys
 
 
 def get_data(url, username, password, timeout):
@@ -47,10 +47,10 @@ def get_data(url, username, password, timeout):
 
     except HTTPError:
         print 'CRITICAL - is %s valid mode ? Check credentials' % url
-        exit(2)
+        sys.exit(2)
     except URLError:
         print 'CRITICAL - Error on %s Double check foreman server name' % url
-        exit(2)
+        sys.exit(2)
 
     return out
 
@@ -158,19 +158,19 @@ globally healthy : not too many in errors, not too many out of sync."""
         print """Non recognized option %s
         Please use --help for usage""" % arguments
         print usage()
-        exit(2)
+        sys.exit(2)
 
     if options.hostname is None:
         print "Missing -H HOSTNAME"
         print "We need the hostname of the Foreman server"
         print usage()
-        exit(2)
+        sys.exit(2)
 
     if options.mode is None:
         print "\nMissing -m MODE"
         print "\nWhat mode are you executing this check in ?"
         print usage()
-        exit(2)
+        sys.exit(2)
 
     return vars(options)
 
@@ -231,13 +231,13 @@ def main():
     print '%s - %s' % (status, message)
     # Exit statuses recognized by Nagios
     if   status == 'OK':
-        exit(0)
+        sys.exit(0)
     elif status == 'WARNING':
-        exit(1)
+        sys.exit(1)
     elif status == 'CRITICAL':
-        exit(2)
+        sys.exit(2)
     else:
-        exit(3)
+        sys.exit(3)
 
 
 if __name__ == '__main__':
