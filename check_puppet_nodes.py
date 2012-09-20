@@ -111,45 +111,45 @@ globally healthy : not too many in errors, not too many out of sync."""
 
     version = "%prog " + __version__
     parser = OptionParser(description=description, usage=usage(),
-                            version=version)
+                          version=version)
     parser.set_defaults(verbose=False)
 
     parser.add_option('-H', '--hostname', type='string',
-                        help='Foreman hostname')
+                      help='Foreman hostname')
 
     parser.add_option('-w', '--warning', type='int', default=5,
-                        help='Warning threshold in minutes')
+                      help='Warning threshold in minutes')
 
     parser.add_option('-c', '--critical', type='int', default=10,
-                        help='Critical threshold in minutes')
+                      help='Critical threshold in minutes')
 
     parser.add_option('-m', '--mode', type='choice',
-                        choices=['out_of_sync', 'errors', 'active'],
-                        help='Mode of check')
+                      choices=['out_of_sync', 'errors', 'active'],
+                      help='Mode of check')
 
     connection = OptionGroup(parser, "Connection Options",
-                    "Network / Authentication related options")
+                             "Network / Authentication related options")
     connection.add_option('-u', '--username', type='string',
-                        help='Foreman username')
+                          help='Foreman username')
     connection.add_option('-p', '--password', type='string',
-                        help='Foreman password')
+                           help='Foreman password')
     connection.add_option('-t', '--timeout', type='int', default=10,
-                        help='Connection timeout in seconds')
+                           help='Connection timeout in seconds')
     connection.add_option('-P', '--port', type='int',
-                        help='Foreman port',
-                        default=80)
+                          help='Foreman port',
+                          default=80)
     connection.add_option('--prefix', type='string',
-                        help='Foreman prefix, if not installed on /',
-                        default='/')
+                          help='Foreman prefix, if not installed on /',
+                          default='/')
     connection.add_option('-S', '--ssl', action="store_true",
-                        default=False,
-                        help='If the connection requires ssl')
+                          default=False,
+                          help='If the connection requires ssl')
     parser.add_option_group(connection)
 
     extra = OptionGroup(parser, "Extra Options")
     extra.add_option('-v', action='store_true', dest='verbose',
-                        default=False,
-                        help='Verbose mode')
+                     default=False,
+                     help='Verbose mode')
     parser.add_option_group(extra)
 
     options, arguments = parser.parse_args()
