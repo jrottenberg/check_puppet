@@ -24,9 +24,14 @@ from optparse import OptionParser, OptionGroup
 import base64
 import urllib2
 import re
-import json
 from urllib2 import HTTPError, URLError
 from socket import setdefaulttimeout
+
+try:
+    import simplejson as json
+except ImportError:
+    # pylint: disable-msg=W0404
+    import json
 
 
 def get_data(url, username, password, timeout):

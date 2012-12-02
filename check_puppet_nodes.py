@@ -17,13 +17,19 @@ __date__ = "September 2012"
 __version__ = "1.1"
 __credits__ = """Thanks to Foreman - http://theforeman.org/"""
 
+
 from optparse import OptionParser, OptionGroup
 import base64
 import urllib2
-import json
 from urllib2 import HTTPError, URLError
 from socket import setdefaulttimeout
 import sys
+
+try:
+    import simplejson as json
+except ImportError:
+    # pylint: disable-msg=W0404
+    import json
 
 
 def get_data(url, username, password, timeout):
