@@ -235,7 +235,7 @@ def main():
 
     print '%s - %s' % (status, message)
     # Exit statuses recognized by Nagios
-    if   status == 'OK':
+    if status == 'OK':
         sys.exit(0)
     elif status == 'WARNING':
         sys.exit(1)
