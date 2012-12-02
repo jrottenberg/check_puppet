@@ -9,5 +9,5 @@ install:
   - pip install pylint pep8
 # command to run tests
 script:
-  - pylint check_puppet_nodes.py
+  - pylint --rcfile pylintrc check_puppet_nodes.py
   - pep8 check_puppet_nodes.py

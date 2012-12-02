@@ -28,7 +28,6 @@ import sys
 try:
     import simplejson as json
 except ImportError:
-    # pylint: disable-msg=W0404
     import json
 
 
