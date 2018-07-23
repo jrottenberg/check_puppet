@@ -5,8 +5,8 @@ python:
   - "2.7"
 # command to install dependencies
 install:
-  - pip install pylint pep8
+  - pip install pylint pycodestyle
 # command to run tests
 script:
   - pylint --rcfile pylintrc check_puppet_nodes.py
-  - pep8 check_puppet_nodes.py
+  - pycodestyle check_puppet_nodes.py
