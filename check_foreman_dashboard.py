@@ -76,7 +76,8 @@ def check_result(params, dashboard):
         status = 'OK'
 
     msg = '%s (levels at %s/%s)' % (msg, params['warning'], params['critical'])
-    return(status, msg)
+    perfdata = '%s=%s;%s;%s' % (mode, target, params['warning'], params['critical'])
+    return(status, msg, perfdata)
 
 
 def usage():
@@ -228,9 +229,9 @@ def main():
                                                          sort_keys=True,
                                                          indent=2))
 
-    status, message = check_result(user_in, foreman_data)
+    status, message, perfdata = check_result(user_in, foreman_data)
 
-    print '%s - %s' % (status, message)
+    print '%s - %s | %s' % (status, message,perfdata)
     # Exit statuses recognized by Nagios
     if status == 'OK':
         raise SystemExit(0)
